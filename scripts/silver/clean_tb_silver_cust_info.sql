@@ -1,43 +1,48 @@
 /*
 This query cleans all the firstname/lastname trailing spaces.
 We changed the gender and martial status convensiton to something more appropriate
+To execute the silver layer run this:
+>> EXEC silver.load_silver;
 */
 
-TRUNCATE TABLE silver.crm_cust_info;
-PRINT 'Inserting data to silver.crm_cust_info';
-INSERT INTO silver.crm_cust_info(
-	cst_id,
-	cst_key,
-	cst_firstname,
-	cst_lastname,
-	cst_material_status,
-	cst_gndr,
-	cst_create_date
-)
-SELECT
-	cst_id,
-	cst_key,
-	TRIM(cst_firstname) AS cst_firstname,
-	TRIM(cst_lastname) AS cst_lastname,
-	CASE
-		WHEN UPPER(cst_material_status) = 'S' THEN 'Single'
-		WHEN UPPER(cst_material_status) = 'M' THEN 'Married'
-		ELSE 'n/a'
-	END AS cst_material_status,
-	CASE
-		WHEN UPPER(cst_gndr) = 'M' THEN 'Male'
-		WHEN UPPER(cst_gndr) = 'F' THEN 'Female'
-		ELSE 'n/a'
-	END AS cst_gnr,
-	cst_create_date
-FROM (
+CREATE OR ALTER PROCEDURE silver.load_silver AS
+BEGIN
+	TRUNCATE TABLE silver.crm_cust_info;
+	PRINT 'Inserting data to silver.crm_cust_info';
+	INSERT INTO silver.crm_cust_info(
+		cst_id,
+		cst_key,
+		cst_firstname,
+		cst_lastname,
+		cst_material_status,
+		cst_gndr,
+		cst_create_date
+	)
 	SELECT
-	*,
-	ROW_NUMBER() OVER (PARTITION BY cst_id ORDER BY cst_create_date DESC) AS flag_last
-	FROM bronze.crm_cust_info
-	WHERE cst_id  IS NOT NULL
-	) t
-WHERE flag_last = 1;
+		cst_id,
+		cst_key,
+		TRIM(cst_firstname) AS cst_firstname,
+		TRIM(cst_lastname) AS cst_lastname,
+		CASE
+			WHEN UPPER(cst_material_status) = 'S' THEN 'Single'
+			WHEN UPPER(cst_material_status) = 'M' THEN 'Married'
+			ELSE 'n/a'
+		END AS cst_material_status,
+		CASE
+			WHEN UPPER(cst_gndr) = 'M' THEN 'Male'
+			WHEN UPPER(cst_gndr) = 'F' THEN 'Female'
+			ELSE 'n/a'
+		END AS cst_gnr,
+		cst_create_date
+	FROM (
+		SELECT
+		*,
+		ROW_NUMBER() OVER (PARTITION BY cst_id ORDER BY cst_create_date DESC) AS flag_last
+		FROM bronze.crm_cust_info
+		WHERE cst_id  IS NOT NULL
+		) t
+	WHERE flag_last = 1;
+END;
 
 
 /*
