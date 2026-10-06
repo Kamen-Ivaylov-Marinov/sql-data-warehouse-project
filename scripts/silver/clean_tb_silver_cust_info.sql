@@ -3,6 +3,8 @@ This query cleans all the firstname/lastname trailing spaces.
 We changed the gender and martial status convensiton to something more appropriate
 */
 
+TRUNCATE TABLE silver.crm_cust_info;
+PRINT 'Inserting data to silver.crm_cust_info';
 INSERT INTO silver.crm_cust_info(
 	cst_id,
 	cst_key,
@@ -68,4 +70,3 @@ SELECT DISTINCT
 	cst_material_status
 FROM silver.crm_cust_info;
 */
-
