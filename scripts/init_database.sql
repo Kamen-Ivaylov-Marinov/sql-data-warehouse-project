@@ -3,38 +3,32 @@
 Create Database and Schemas
 =============================================================
 Script Purpose:
-    This script creates a new database named 'DataWarehouse' after checking if it already exists. 
-    If the database exists, it is dropped and recreated. Additionally, the script sets up three schemas 
+    This script creates a new database named 'datawarehouse' after checking if it already exists.
+    If the database exists, it is dropped and recreated. Additionally, the script sets up three schemas
     within the database: 'bronze', 'silver', and 'gold'.
+
+How to run:
+    Run it with psql while connected to another database (for example 'postgres'):
+        psql -U postgres -d postgres -f scripts/init_database.sql
+    The '\c' line is a psql command, so in pgAdmin or DBeaver run the first part,
+    connect to 'datawarehouse' manually, then run the CREATE SCHEMA part.
+
 WARNING:
-    Running this script will drop the entire 'DataWarehouse' database if it exists. 
+    Running this script will drop the entire 'datawarehouse' database if it exists.
     All data in the database will be permanently deleted.
 */
 
-USE master;
-GO
+-- Drop and recreate the 'datawarehouse' database
+-- WITH (FORCE) disconnects other sessions first (PostgreSQL 13+)
+DROP DATABASE IF EXISTS datawarehouse WITH (FORCE);
 
--- Drop and recreate the 'DataWarehouse' database
-IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'DataWarehouse')
-BEGIN
-    ALTER DATABASE DataWarehouse SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE DataWarehouse;
-END;
-GO
+-- Create the 'datawarehouse' database
+CREATE DATABASE datawarehouse;
 
--- Create the 'DataWarehouse' database
-CREATE DATABASE DataWarehouse;
-GO
-
-USE DataWarehouse;
-GO
+-- Connect to the new database
+\c datawarehouse
 
 -- Create Schemas
 CREATE SCHEMA bronze;
-GO
-
 CREATE SCHEMA silver;
-GO
-
 CREATE SCHEMA gold;
-GO
